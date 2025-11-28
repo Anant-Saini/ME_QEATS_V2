@@ -25,7 +25,8 @@ import org.springframework.web.bind.annotation.RestController;
 // TODO: CRIO_TASK_MODULE_RESTAURANTSAPI
 // Implement Controller using Spring annotations.
 // Remember, annotations have various "targets". They can be class level, method level or others.
-
+@Log4j2
+@RestController
 public class RestaurantController {
 
   public static final String RESTAURANT_API_ENDPOINT = "/qeats/v1";
@@ -42,8 +43,8 @@ public class RestaurantController {
 
 
 
-  @GetMapping(RESTAURANTS_API)
-  public ResponseEntity<GetRestaurantsResponse> getRestaurants(
+  @GetMapping(RESTAURANT_API_ENDPOINT+RESTAURANTS_API)
+  public ResponseEntity<GetRestaurantsResponse> getRestaurants(@Valid
        GetRestaurantsRequest getRestaurantsRequest) {
 
     log.info("getRestaurants called with {}", getRestaurantsRequest);
