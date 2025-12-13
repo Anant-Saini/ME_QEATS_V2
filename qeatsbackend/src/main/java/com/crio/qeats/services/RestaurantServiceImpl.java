@@ -22,6 +22,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -40,6 +41,7 @@ public class RestaurantServiceImpl implements RestaurantService {
   private static final LocalTime EVENING_END = LocalTime.of(21, 0);
 
   @Autowired
+  @Qualifier("restaurantRepositoryServiceImpl")
   private RestaurantRepositoryService restaurantRepositoryService;
 
 

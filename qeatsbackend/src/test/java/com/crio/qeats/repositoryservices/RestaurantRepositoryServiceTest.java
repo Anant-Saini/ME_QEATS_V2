@@ -33,6 +33,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -52,6 +53,7 @@ public class RestaurantRepositoryServiceTest {
   private static final String FIXTURES = "fixtures/exchanges";
   List<RestaurantEntity> allRestaurants = new ArrayList<>();
   @Autowired
+  @Qualifier("restaurantRepositoryServiceImpl")
   private RestaurantRepositoryService restaurantRepositoryService;
   @Autowired
   private MongoTemplate mongoTemplate;

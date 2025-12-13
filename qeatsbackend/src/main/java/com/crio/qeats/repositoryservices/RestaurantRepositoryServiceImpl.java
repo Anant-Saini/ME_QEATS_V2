@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import javax.inject.Provider;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -38,6 +39,7 @@ import org.springframework.stereotype.Service;
 
 
 @Service
+@Primary
 public class RestaurantRepositoryServiceImpl implements RestaurantRepositoryService {
 
 
@@ -48,6 +50,9 @@ public class RestaurantRepositoryServiceImpl implements RestaurantRepositoryServ
 
   @Autowired
   private Provider<ModelMapper> modelMapperProvider;
+
+  @Autowired
+  private RestaurantRepository restaurantRepository;
 
   private boolean isOpenNow(LocalTime time, RestaurantEntity res) {
     LocalTime openingTime = LocalTime.parse(res.getOpensAt());
@@ -64,12 +69,14 @@ public class RestaurantRepositoryServiceImpl implements RestaurantRepositoryServ
   public List<Restaurant> findAllRestaurantsCloseBy(Double latitude,
       Double longitude, LocalTime currentTime, Double servingRadiusInKms) {
 
-    List<Restaurant> restaurants = null;
+    List<Restaurant> restaurants = new ArrayList<>();
+    List<RestaurantEntity> restaurantEntities = restaurantRepository.findAll();
 
-
-      //CHECKSTYLE:OFF
-      //CHECKSTYLE:ON
-
+    for(RestaurantEntity restaurantEntity: restaurantEntities) {
+      if(isRestaurantCloseByAndOpen(restaurantEntity, currentTime, latitude, longitude, servingRadiusInKms)) {
+        restaurants.add(modelMapperProvider.get().map(restaurantEntity, Restaurant.class));
+      }
+    }
 
     return restaurants;
   }
