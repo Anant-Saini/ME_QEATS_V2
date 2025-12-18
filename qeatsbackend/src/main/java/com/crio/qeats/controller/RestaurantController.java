@@ -6,11 +6,13 @@
 
 package com.crio.qeats.controller;
 
+import com.crio.qeats.exchanges.GetCartResponse;
 import com.crio.qeats.exchanges.GetRestaurantsRequest;
 import com.crio.qeats.exchanges.GetRestaurantsResponse;
 import com.crio.qeats.services.RestaurantService;
 import lombok.extern.log4j.Log4j2;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,14 +50,23 @@ public class RestaurantController {
   public ResponseEntity<GetRestaurantsResponse> getRestaurants(@Valid
        GetRestaurantsRequest getRestaurantsRequest) {
 
-    log.info("getRestaurants called with {}", getRestaurantsRequest);
+    log.debug("getRestaurants called with {}", getRestaurantsRequest);
     GetRestaurantsResponse getRestaurantsResponse;
 
       getRestaurantsResponse = restaurantService
-          .findAllRestaurantsCloseBy(getRestaurantsRequest, LocalTime.now());
-      log.info("getRestaurants returned {}", getRestaurantsResponse);
+         .findAllRestaurantsCloseBy(getRestaurantsRequest, LocalTime.of(11, 30));
+      log.debug("getRestaurants returned {}", getRestaurantsResponse);
 
     return ResponseEntity.ok().body(getRestaurantsResponse);
+  }
+
+  @GetMapping(RESTAURANT_API_ENDPOINT+CART_API)
+  public ResponseEntity<GetCartResponse> getCart(@RequestParam("userId") String userId) {
+    GetCartResponse getCartResponse = new GetCartResponse(userId, new ArrayList<>(), 0);
+
+
+    return ResponseEntity.ok().body(getCartResponse);
+
   }
 
   // TIP(MODULE_MENUAPI): Model Implementation for getting menu given a restaurantId.

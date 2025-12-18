@@ -73,7 +73,8 @@ public class RestaurantRepositoryServiceImpl implements RestaurantRepositoryServ
     List<RestaurantEntity> restaurantEntities = restaurantRepository.findAll();
 
     for(RestaurantEntity restaurantEntity: restaurantEntities) {
-      if(isRestaurantCloseByAndOpen(restaurantEntity, currentTime, latitude, longitude, servingRadiusInKms)) {
+      
+      if(isRestaurantCloseByAndOpen(restaurantEntity, currentTime, latitude, longitude, servingRadiusInKms)) { 
         restaurants.add(modelMapperProvider.get().map(restaurantEntity, Restaurant.class));
       }
     }
