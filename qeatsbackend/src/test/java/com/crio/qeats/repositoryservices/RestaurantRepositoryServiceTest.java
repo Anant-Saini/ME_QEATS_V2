@@ -144,11 +144,9 @@ public class RestaurantRepositoryServiceTest {
 
 
   void searchedAttributesIsSubsetOfRetrievedRestaurantAttributes() {
-    // TODO
   }
 
   void searchedAttributesIsCaseInsensitive() {
-    // TODO
   }
 
   private List<RestaurantEntity> listOfRestaurants() throws IOException {
