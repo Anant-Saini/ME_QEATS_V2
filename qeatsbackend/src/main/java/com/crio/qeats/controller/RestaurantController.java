@@ -16,6 +16,12 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import javax.validation.Valid;
 
+import com.crio.qeats.exchanges.GetRestaurantsRequest;
+import com.crio.qeats.exchanges.GetRestaurantsResponse;
+import com.crio.qeats.services.RestaurantService;
+import java.time.LocalTime;
+import javax.validation.Valid;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -51,17 +57,17 @@ public class RestaurantController {
   public ResponseEntity<GetRestaurantsResponse> getRestaurants(@Valid
        GetRestaurantsRequest getRestaurantsRequest) {
 
-    log.debug("getRestaurants called with {}", getRestaurantsRequest);
+    log.info("getRestaurants called with {}", getRestaurantsRequest);
     GetRestaurantsResponse getRestaurantsResponse;
 
       getRestaurantsResponse = restaurantService
-         .findAllRestaurantsCloseBy(getRestaurantsRequest, LocalTime.of(11, 30));
+         .findAllRestaurantsCloseBy(getRestaurantsRequest, LocalTime.now());
 
       for (Restaurant restaurant : getRestaurantsResponse.getRestaurants()) {
           String sanitizedName = restaurant.getName().replaceAll("[Â©éí]", "e");
           restaurant.setName(sanitizedName);
       }
-      log.debug("getRestaurants returned {}", getRestaurantsResponse);
+      log.info("getRestaurants returned {}", getRestaurantsResponse);
 
     return ResponseEntity.ok().body(getRestaurantsResponse);
   }

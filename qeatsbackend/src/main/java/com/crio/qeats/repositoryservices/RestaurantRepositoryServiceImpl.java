@@ -7,6 +7,7 @@
 package com.crio.qeats.repositoryservices;
 
 import ch.hsr.geohash.GeoHash;
+import com.crio.qeats.configs.RedisConfiguration;
 import com.crio.qeats.dto.Restaurant;
 import com.crio.qeats.globals.GlobalConstants;
 import com.crio.qeats.models.RestaurantEntity;
@@ -36,6 +37,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
+import redis.clients.jedis.Jedis;
 
 
 @Service
@@ -44,6 +46,8 @@ public class RestaurantRepositoryServiceImpl implements RestaurantRepositoryServ
 
 
 
+  @Autowired
+  private RedisConfiguration redisConfiguration;
 
   @Autowired
   private MongoTemplate mongoTemplate;
@@ -66,18 +70,32 @@ public class RestaurantRepositoryServiceImpl implements RestaurantRepositoryServ
   // 1. Implement findAllRestaurantsCloseby.
   // 2. Remember to keep the precision of GeoHash in mind while using it as a key.
   // Check RestaurantRepositoryService.java file for the interface contract.
+  // public List<Restaurant> findAllRestaurantsCloseBy(Double latitude,
+  //     Double longitude, LocalTime currentTime, Double servingRadiusInKms) {
+
+  //   List<Restaurant> restaurants = new ArrayList<>();
+  //   List<RestaurantEntity> restaurantEntities = restaurantRepository.findAll();
+
+  //   for(RestaurantEntity restaurantEntity: restaurantEntities) {
+      
+  //     if(isRestaurantCloseByAndOpen(restaurantEntity, currentTime, latitude, longitude, servingRadiusInKms)) { 
+  //       restaurants.add(modelMapperProvider.get().map(restaurantEntity, Restaurant.class));
+  //     }
+  //   }
   public List<Restaurant> findAllRestaurantsCloseBy(Double latitude,
       Double longitude, LocalTime currentTime, Double servingRadiusInKms) {
 
-    List<Restaurant> restaurants = new ArrayList<>();
-    List<RestaurantEntity> restaurantEntities = restaurantRepository.findAll();
+    List<Restaurant> restaurants = null;
+    // TODO: CRIO_TASK_MODULE_REDIS
+    // We want to use cache to speed things up. Write methods that perform the same functionality,
+    // but using the cache if it is present and reachable.
+    // Remember, you must ensure that if cache is not present, the queries are directed at the
+    // database instead.
 
-    for(RestaurantEntity restaurantEntity: restaurantEntities) {
-      
-      if(isRestaurantCloseByAndOpen(restaurantEntity, currentTime, latitude, longitude, servingRadiusInKms)) { 
-        restaurants.add(modelMapperProvider.get().map(restaurantEntity, Restaurant.class));
-      }
-    }
+
+      //CHECKSTYLE:OFF
+      //CHECKSTYLE:ON
+
 
     return restaurants;
   }
@@ -89,10 +107,6 @@ public class RestaurantRepositoryServiceImpl implements RestaurantRepositoryServ
 
 
 
-  // TODO: CRIO_TASK_MODULE_NOSQL
-  // Objective:
-  // 1. Check if a restaurant is nearby and open. If so, it is a candidate to be returned.
-  // NOTE: How far exactly is "nearby"?
 
   /**
    * Utility method to check if a restaurant is within the serving radius at a given time.
