@@ -75,13 +75,20 @@ public class RedisConfiguration {
    */
   public void destroyCache() {
     if(jedisPool != null && !jedisPool.isClosed() ) {
+      jedisPool.getResource().flushAll();
       jedisPool.close();
+      this.jedisPool = null;
     }
   }
 
   public JedisPool getJedisPool() {
-      if (jedisPool == null) {
-        throw new IllegalStateException("JedisPool was not initialized!");
+      if (jedisPool == null || jedisPool.isClosed()) {
+        try {
+          this.jedisPool = new JedisPool(redisHost, redisPort);
+
+        } catch(Exception e) {
+          e.printStackTrace();
+        }
       }
       return jedisPool;
   }

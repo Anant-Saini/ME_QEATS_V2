@@ -92,9 +92,7 @@ public class RestaurantRepositoryServiceTest {
   @AfterEach
   void teardown() {
     mongoTemplate.dropCollection("restaurants");
-    try (Jedis jedis = redisConfiguration.getJedisPool().getResource()) {
-      jedis.flushAll(); // Ensure a clean slate for the next test case
-    }
+    redisConfiguration.destroyCache();
   }
 
   @Test
