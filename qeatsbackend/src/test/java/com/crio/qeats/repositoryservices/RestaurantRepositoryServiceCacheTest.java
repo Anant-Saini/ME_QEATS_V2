@@ -62,7 +62,9 @@ class RestaurantRepositoryServiceCacheTest {
 
   @AfterEach  
   void teardown() {
-    redisConfiguration.destroyCache();
+    try (Jedis jedis = redisConfiguration.getJedisPool().getResource()) {
+      jedis.flushAll(); // Ensure a clean slate for the next test case
+    }
   }
 
 
