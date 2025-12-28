@@ -64,7 +64,6 @@ class RestaurantRepositoryServiceCacheTest {
   void teardown() {
 
     redisConfiguration.destroyCache();
-    
   }
 
 
