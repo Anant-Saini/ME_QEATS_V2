@@ -60,11 +60,16 @@ class RestaurantRepositoryServiceCacheTest {
   @MockBean
   private RestaurantRepository mockRestaurantRepository;
 
-  @AfterEach  
-  void teardown() {
+  @BeforeEach
+  void flushRedis() {
     try (Jedis jedis = redisConfiguration.getJedisPool().getResource()) {
       jedis.flushAll(); // Ensure a clean slate for the next test case
     }
+  }
+
+  @AfterEach  
+  void teardown() {
+    
   }
 
 
