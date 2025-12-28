@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import javax.inject.Provider;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,6 +42,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+import redis.clients.jedis.Jedis;
 import redis.embedded.RedisServer;
 
 @SpringBootTest(classes = {QEatsApplication.class})
@@ -66,16 +68,16 @@ public class RestaurantRepositoryServiceTest {
   @Autowired
   private RedisConfiguration redisConfiguration;
 
-  @Value("${spring.redis.port}")
-  private int redisPort;
+  // @Value("${spring.redis.port}")
+  // private int redisPort;
 
-  private RedisServer server = null;
+  // private RedisServer server = null;
 
-  @BeforeEach
-  public void setupRedisServer() throws IOException {
-    System.out.println("Redis port = " + redisPort);
-    redisConfiguration.setRedisPort(redisPort);
-  }
+  // @BeforeEach
+  // public void setupRedisServer() throws IOException {
+  //   System.out.println("Redis port = " + redisPort);
+  //   redisConfiguration.setRedisPort(redisPort);
+  // }
 
 
   @BeforeEach
@@ -90,7 +92,9 @@ public class RestaurantRepositoryServiceTest {
   @AfterEach
   void teardown() {
     mongoTemplate.dropCollection("restaurants");
-    redisConfiguration.destroyCache();
+    try (Jedis jedis = redisConfiguration.getJedisPool().getResource()) {
+      jedis.flushAll(); // Ensure a clean slate for the next test case
+    }
   }
 
   @Test

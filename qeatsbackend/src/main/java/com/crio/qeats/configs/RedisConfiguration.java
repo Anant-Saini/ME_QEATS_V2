@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPoolConfig;
 
 
 @Component
@@ -36,7 +35,7 @@ public class RedisConfiguration {
   @Value("${spring.redis.port}")
   public void setRedisPort(int port) {
     System.out.println("setting up redis port to " + port);
-    redisPort = port;
+    this.redisPort = port;
   }
 
   /**
@@ -45,6 +44,8 @@ public class RedisConfiguration {
    */
   @PostConstruct
   public void initCache() {
+    System.out.println("🔧 Initializing JedisPool on " + redisHost + ":" + redisPort);
+    this.jedisPool = new JedisPool(redisHost, redisPort);
   }
 
 
@@ -55,7 +56,17 @@ public class RedisConfiguration {
    */
   public boolean isCacheAvailable() {
 
-     return false;
+    if(jedisPool == null || jedisPool.isClosed())
+      return false; 
+
+    try(Jedis jedis = jedisPool.getResource()) {
+      jedis.ping();
+      return true;
+
+    } catch(Exception e) {
+      System.err.println("Redis cache not available"+ e.getMessage());
+      return false;
+    }
   }
 
   /**
@@ -63,6 +74,16 @@ public class RedisConfiguration {
    * TIP: This is useful if cache is stale or while performing tests.
    */
   public void destroyCache() {
+    if(jedisPool != null && !jedisPool.isClosed() ) {
+      jedisPool.close();
+    }
+  }
+
+  public JedisPool getJedisPool() {
+      if (jedisPool == null) {
+        throw new IllegalStateException("JedisPool was not initialized!");
+      }
+      return jedisPool;
   }
 
 }

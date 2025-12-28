@@ -17,8 +17,10 @@ public class EmbededRedis {
 
   @PostConstruct
   public void startRedis() throws IOException {
+    System.out.println("🚀 Starting Embedded Redis on port: " + redisPort);
     redisServer = new RedisServer(redisPort);
     redisServer.start();
+    System.out.println("✅ Redis Server Started Successfully!");
   }
 
   @PreDestroy

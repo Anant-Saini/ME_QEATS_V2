@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.time.LocalTime;
 import java.util.List;
 import javax.inject.Provider;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,7 +34,7 @@ import org.springframework.test.context.ActiveProfiles;
 import redis.clients.jedis.Jedis;
 import redis.embedded.RedisServer;
 
-@SpringBootTest(classes = {QEatsApplication.class})
+@SpringBootTest(classes = { QEatsApplication.class })
 @DirtiesContext
 @ActiveProfiles("test")
 class RestaurantRepositoryServiceCacheTest {
@@ -51,15 +52,15 @@ class RestaurantRepositoryServiceCacheTest {
   @Autowired
   private Provider<ModelMapper> modelMapperProvider;
 
-  @Value("${spring.redis.port}")
-  private int redisPort;
+  //@Value("${spring.redis.port}")
+  //private int redisPort;
 
-  private RedisServer server = null;
+  //private RedisServer server = null;
 
   @MockBean
   private RestaurantRepository mockRestaurantRepository;
 
-  @AfterEach
+  @AfterEach  
   void teardown() {
     redisConfiguration.destroyCache();
   }
@@ -72,7 +73,7 @@ class RestaurantRepositoryServiceCacheTest {
 
     when(mockRestaurantRepository.findAll()).thenReturn(listOfRestaurants());
 
-    Jedis jedis = redisConfiguration.getJedisPool().getResource();
+    Jedis jedis =  redisConfiguration.getJedisPool().getResource();
 
     // call it twice
     List<Restaurant> allRestaurantsCloseBy = restaurantRepositoryService

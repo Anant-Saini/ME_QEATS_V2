@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -56,6 +57,9 @@ public class RestaurantRepositoryServiceImpl implements RestaurantRepositoryServ
   private Provider<ModelMapper> modelMapperProvider;
 
   @Autowired
+  private ObjectMapper objectMapper;
+
+  @Autowired
   private RestaurantRepository restaurantRepository;
 
   private boolean isOpenNow(LocalTime time, RestaurantEntity res) {
@@ -70,48 +74,72 @@ public class RestaurantRepositoryServiceImpl implements RestaurantRepositoryServ
   // 1. Implement findAllRestaurantsCloseby.
   // 2. Remember to keep the precision of GeoHash in mind while using it as a key.
   // Check RestaurantRepositoryService.java file for the interface contract.
-  // public List<Restaurant> findAllRestaurantsCloseBy(Double latitude,
-  //     Double longitude, LocalTime currentTime, Double servingRadiusInKms) {
-
-  //   List<Restaurant> restaurants = new ArrayList<>();
-  //   List<RestaurantEntity> restaurantEntities = restaurantRepository.findAll();
-
-  //   for(RestaurantEntity restaurantEntity: restaurantEntities) {
-      
-  //     if(isRestaurantCloseByAndOpen(restaurantEntity, currentTime, latitude, longitude, servingRadiusInKms)) { 
-  //       restaurants.add(modelMapperProvider.get().map(restaurantEntity, Restaurant.class));
-  //     }
-  //   }
   public List<Restaurant> findAllRestaurantsCloseBy(Double latitude,
       Double longitude, LocalTime currentTime, Double servingRadiusInKms) {
 
-    List<Restaurant> restaurants = null;
-    // TODO: CRIO_TASK_MODULE_REDIS
-    // We want to use cache to speed things up. Write methods that perform the same functionality,
-    // but using the cache if it is present and reachable.
-    // Remember, you must ensure that if cache is not present, the queries are directed at the
-    // database instead.
+    int precision = servingRadiusInKms == 3.0 ? 7 : 6;
+    GeoHash geohash = GeoHash.withCharacterPrecision(latitude, longitude, precision);
+    String key = geohash.toBase32();
+    
+    try(Jedis jedis = redisConfiguration.getJedisPool().getResource()) {
+
+      String fetchedJson = jedis.get(key);
+      if(fetchedJson != null && !fetchedJson.isEmpty()) {
+
+        List<RestaurantEntity> cachedRestaurantEntities = objectMapper.readValue( fetchedJson, new TypeReference<List<RestaurantEntity>>() {});
+        return getOpenRestaurants(cachedRestaurantEntities, currentTime);
+      }
+
+      List<RestaurantEntity> restaurantEntities = restaurantRepository.findAll();
+      List<RestaurantEntity> nearByRestaurantEntities = getNearByRestaurantEntities(restaurantEntities, latitude, longitude, servingRadiusInKms);
+      String json = objectMapper.writeValueAsString(nearByRestaurantEntities);
+      jedis.setex(key, RedisConfiguration.REDIS_ENTRY_EXPIRY_IN_SECONDS, json);
+
+      return getOpenRestaurants(nearByRestaurantEntities, currentTime);
 
 
-      //CHECKSTYLE:OFF
-      //CHECKSTYLE:ON
+    } catch(Exception e) {
+      e.printStackTrace();
+      return Collections.emptyList();
+    }
+
+  }
+  // public List<Restaurant> findAllRestaurantsCloseBy(Double latitude,
+  //     Double longitude, LocalTime currentTime, Double servingRadiusInKms) {
+
+  //   List<Restaurant> restaurants = null;
+  //   // TODO: CRIO_TASK_MODULE_REDIS
+  //   // We want to use cache to speed things up. Write methods that perform the same functionality,
+  //   // but using the cache if it is present and reachable.
+  //   // Remember, you must ensure that if cache is not present, the queries are directed at the
+  //   // database instead.
 
 
-    return restaurants;
+  //     //CHECKSTYLE:OFF
+  //     //CHECKSTYLE:ON
+
+
+  //   return restaurants;
+  // }
+  private List<Restaurant> getOpenRestaurants(List<RestaurantEntity> restaurantEntities, LocalTime currentTime) {
+    
+    return restaurantEntities.stream().filter( entity -> isOpenNow(currentTime, entity) )
+    .map( entity -> modelMapperProvider.get().map(entity, Restaurant.class))
+    .collect(Collectors.toList());
   }
 
+  private List<RestaurantEntity> getNearByRestaurantEntities(List<RestaurantEntity> restaurantEntities, Double latitude, Double longitude, Double servingRadiusInKms) {
+    return restaurantEntities.stream()
+    .filter( entity -> GeoUtils.findDistanceInKm(latitude, longitude, entity.getLatitude(), entity.getLongitude()) < servingRadiusInKms)
+    .collect(Collectors.toList());
 
-
-
-
-
-
+  }
 
 
   /**
    * Utility method to check if a restaurant is within the serving radius at a given time.
    * @return boolean True if restaurant falls within serving radius and is open, false otherwise
-   */
+   
   private boolean isRestaurantCloseByAndOpen(RestaurantEntity restaurantEntity,
       LocalTime currentTime, Double latitude, Double longitude, Double servingRadiusInKms) {
     if (isOpenNow(currentTime, restaurantEntity)) {
@@ -122,6 +150,7 @@ public class RestaurantRepositoryServiceImpl implements RestaurantRepositoryServ
 
     return false;
   }
+  */
 
 
 
