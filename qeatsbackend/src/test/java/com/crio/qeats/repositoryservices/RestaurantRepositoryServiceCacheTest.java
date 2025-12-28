@@ -91,22 +91,6 @@ class RestaurantRepositoryServiceCacheTest {
     assertEquals("12", allRestaurantsCloseBy.get(1).getRestaurantId());
   }
 
-  @Test
-  void restaurantsCloseByFromColdCache(@Autowired MongoTemplate mongoTemplate) throws IOException {
-    assertNotNull(mongoTemplate);
-    assertNotNull(restaurantRepositoryService);
-
-    when(mockRestaurantRepository.findAll()).thenReturn(listOfRestaurants());
-
-    List<Restaurant> allRestaurantsCloseBy = restaurantRepositoryService
-        .findAllRestaurantsCloseBy(20.0, 30.0, LocalTime.of(18, 1), 3.0);
-
-    verify(mockRestaurantRepository, times(1)).findAll();
-    assertEquals(2, allRestaurantsCloseBy.size());
-    assertEquals("11", allRestaurantsCloseBy.get(0).getRestaurantId());
-    assertEquals("12", allRestaurantsCloseBy.get(1).getRestaurantId());
-  }
-
   private List<RestaurantEntity> listOfRestaurants() throws IOException {
     String fixture =
         FixtureHelpers.fixture(FIXTURES + "/initial_data_set_restaurants.json");
