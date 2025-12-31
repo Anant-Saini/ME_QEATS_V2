@@ -152,8 +152,8 @@ public class RestaurantRepositoryServiceTest {
     assertNotNull(mongoTemplate);
     assertNotNull(restaurantRepositoryService);
 
-    doReturn(Optional.of(allRestaurants))
-        .when(restaurantRepository).findRestaurantsByNameExact(any());
+    doReturn(allRestaurants)
+        .when(restaurantRepository).findByNameContainingIgnoreCase(any());
 
     String searchFor = "A2B";
     List<Restaurant> foundRestaurantsList = restaurantRepositoryService
@@ -168,8 +168,8 @@ public class RestaurantRepositoryServiceTest {
     assertNotNull(mongoTemplate);
     assertNotNull(restaurantRepositoryService);
 
-    doReturn(Optional.of(allRestaurants))
-        .when(restaurantRepository).findRestaurantsByNameExact(any());
+    doReturn(allRestaurants)
+        .when(restaurantRepository).findByNameContainingIgnoreCase(any());
     String searchFor = "A2B";
     List<Restaurant> foundRestaurantsList = restaurantRepositoryService
         .findRestaurantsByName(20.8, 30.1, searchFor,

@@ -28,6 +28,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Future;
@@ -64,6 +66,9 @@ public class RestaurantRepositoryServiceImpl implements RestaurantRepositoryServ
   private ObjectMapper objectMapper;
 
   @Autowired
+  private MenuRepository menuRepository;
+
+  @Autowired
   private RestaurantRepository restaurantRepository;
 
   private boolean isOpenNow(LocalTime time, RestaurantEntity res) {
@@ -84,23 +89,27 @@ public class RestaurantRepositoryServiceImpl implements RestaurantRepositoryServ
     int precision = servingRadiusInKms == 3.0 ? 7 : 6;
     GeoHash geohash = GeoHash.withCharacterPrecision(latitude, longitude, precision);
     String key = geohash.toBase32();
-    
+
+    List<RestaurantEntity> closeByRestaurantEntities = getCloseByRestaurantEntitiesFromCacheOrDB(key, latitude, longitude, servingRadiusInKms);
+    return getOpenRestaurants(closeByRestaurantEntities, currentTime);
+
+  }
+
+  private List<RestaurantEntity> getCloseByRestaurantEntitiesFromCacheOrDB(String key, Double latitude, Double longitude, Double servingRadiusInKms) {
     try(Jedis jedis = redisConfiguration.getJedisPool().getResource()) {
 
       String fetchedJson = jedis.get(key);
-      if(fetchedJson != null && !fetchedJson.isEmpty()) {
+      if(fetchedJson != null) {
 
-        List<RestaurantEntity> cachedRestaurantEntities = objectMapper.readValue( fetchedJson, new TypeReference<List<RestaurantEntity>>() {});
-        return getOpenRestaurants(cachedRestaurantEntities, currentTime);
+        List<RestaurantEntity> cachedCloseByRestaurantEntities = objectMapper.readValue( fetchedJson, new TypeReference<List<RestaurantEntity>>() {});
+        return cachedCloseByRestaurantEntities;
       }
 
-      List<RestaurantEntity> restaurantEntities = restaurantRepository.findAll();
-      List<RestaurantEntity> nearByRestaurantEntities = getNearByRestaurantEntities(restaurantEntities, latitude, longitude, servingRadiusInKms);
-      String json = objectMapper.writeValueAsString(nearByRestaurantEntities);
+      List<RestaurantEntity> dbCloseByRestaurantEntities = getCloseByRestaurantEntitiesFromDB(latitude, longitude, servingRadiusInKms);
+      String json = objectMapper.writeValueAsString(dbCloseByRestaurantEntities);
       jedis.setex(key, RedisConfiguration.REDIS_ENTRY_EXPIRY_IN_SECONDS, json);
 
-      return getOpenRestaurants(nearByRestaurantEntities, currentTime);
-
+      return dbCloseByRestaurantEntities;
 
     } catch(Exception e) {
       e.printStackTrace();
@@ -108,23 +117,13 @@ public class RestaurantRepositoryServiceImpl implements RestaurantRepositoryServ
     }
 
   }
-  // public List<Restaurant> findAllRestaurantsCloseBy(Double latitude,
-  //     Double longitude, LocalTime currentTime, Double servingRadiusInKms) {
 
-  //   List<Restaurant> restaurants = null;
-  //   // TODO: CRIO_TASK_MODULE_REDIS
-  //   // We want to use cache to speed things up. Write methods that perform the same functionality,
-  //   // but using the cache if it is present and reachable.
-  //   // Remember, you must ensure that if cache is not present, the queries are directed at the
-  //   // database instead.
+  private List<RestaurantEntity> getCloseByRestaurantEntitiesFromDB(Double latitude, Double longitude, Double servingRadiusInKms) {
+    List<RestaurantEntity> restaurantEntities = restaurantRepository.findAll();
+    List<RestaurantEntity> nearByRestaurantEntities = getNearByRestaurantEntities(restaurantEntities, latitude, longitude, servingRadiusInKms);
+    return nearByRestaurantEntities;
+  }
 
-
-  //     //CHECKSTYLE:OFF
-  //     //CHECKSTYLE:ON
-
-
-  //   return restaurants;
-  // }
   private List<Restaurant> getOpenRestaurants(List<RestaurantEntity> restaurantEntities, LocalTime currentTime) {
     
     return restaurantEntities.stream().filter( entity -> isOpenNow(currentTime, entity) )
@@ -138,21 +137,16 @@ public class RestaurantRepositoryServiceImpl implements RestaurantRepositoryServ
     .collect(Collectors.toList());
 
   }
-
-
-  /**
-   * Utility method to check if a restaurant is within the serving radius at a given time.
-   * @return boolean True if restaurant falls within serving radius and is open, false otherwise
    
-  public List<Restaurant> findAllRestaurantsCloseBy(Double latitude,
-      Double longitude, LocalTime currentTime, Double servingRadiusInKms) {
+  private boolean isRestaurantCloseByAndOpen(RestaurantEntity restaurantEntity,
+      LocalTime currentTime, Double latitude, Double longitude, Double servingRadiusInKms) {
+    if (isOpenNow(currentTime, restaurantEntity)) {
+      return GeoUtils.findDistanceInKm(latitude, longitude,
+          restaurantEntity.getLatitude(), restaurantEntity.getLongitude())
+          < servingRadiusInKms;
+    }
 
-    List<Restaurant> restaurants = null;
-
-
-
-
-    return restaurants;
+    return false;
   }
 
   // TODO: CRIO_TASK_MODULE_RESTAURANTSEARCH
@@ -161,9 +155,20 @@ public class RestaurantRepositoryServiceImpl implements RestaurantRepositoryServ
   @Override
   public List<Restaurant> findRestaurantsByName(Double latitude, Double longitude,
       String searchString, LocalTime currentTime, Double servingRadiusInKms) {
+        List<RestaurantEntity> restaurantEntitiesWithMatchingName = restaurantRepository.findByNameContainingIgnoreCase(searchString);
+        List<RestaurantEntity> nearByRestaurantEntitiesWithMatchingName = getNearByRestaurantEntities(restaurantEntitiesWithMatchingName, latitude, longitude, servingRadiusInKms);
+        List<RestaurantEntity> sortedNearByRestaurantEntities = nearByRestaurantEntitiesWithMatchingName.stream()
+        .sorted((r1, r2) -> {
+
+          boolean exactNameMatchR1 = r1.getName().equalsIgnoreCase(searchString);
+          boolean exactNameMatchR2 = r2.getName().equalsIgnoreCase(searchString);
+
+          return Boolean.compare(exactNameMatchR2, exactNameMatchR1);
+        })
+        .collect(Collectors.toList());
 
 
-     return null;
+     return getOpenRestaurants(sortedNearByRestaurantEntities, currentTime);
   }
 
 
@@ -174,9 +179,10 @@ public class RestaurantRepositoryServiceImpl implements RestaurantRepositoryServ
   public List<Restaurant> findRestaurantsByAttributes(
       Double latitude, Double longitude,
       String searchString, LocalTime currentTime, Double servingRadiusInKms) {
+      List<RestaurantEntity> restaurantEntitiesWithMatchingAttribute = restaurantRepository.findByAttributesContainingIgnoreCase(searchString);
+      List<RestaurantEntity> nearByRestaurantEntitiesWithMatchingAttribute = getNearByRestaurantEntities(restaurantEntitiesWithMatchingAttribute, latitude, longitude, servingRadiusInKms);
 
-
-     return null;
+      return getOpenRestaurants(nearByRestaurantEntitiesWithMatchingAttribute, currentTime);
   }
 
 
@@ -190,9 +196,31 @@ public class RestaurantRepositoryServiceImpl implements RestaurantRepositoryServ
   public List<Restaurant> findRestaurantsByItemName(
       Double latitude, Double longitude,
       String searchString, LocalTime currentTime, Double servingRadiusInKms) {
+      //finding and sorting menu entities which have matching item name
+      List<MenuEntity> menuEntitiesWithMatchingItemName = menuRepository.findMenusByItemsNameContainingIgnoreCase(searchString);
+      List<String> orderedRestaurantIds = menuEntitiesWithMatchingItemName.stream()
+      .sorted((m1, m2) -> {
+        boolean isM1ContainsExactItem = isSearchStrEqualsAnyItemNameInMenuEntity(m1, searchString);
+        boolean isM2ContainsExactItem = isSearchStrEqualsAnyItemNameInMenuEntity(m2, searchString);
 
+        return Boolean.compare(isM2ContainsExactItem, isM1ContainsExactItem);
+      })
+      .map(MenuEntity::getRestaurantId)
+      .distinct()
+      .collect(Collectors.toList());
+      //getting restaurants corresponding to founded matching menus
+      List<RestaurantEntity> restaurantEntitiesWithMatchingItemName = restaurantRepository.findByRestaurantIdIn(orderedRestaurantIds);
+      //ordering restaurant entity in same order as menu entity (with exact matches first)
+      Map<String, RestaurantEntity> byIdMap = restaurantEntitiesWithMatchingItemName.stream()
+      .collect(Collectors.toMap(RestaurantEntity::getRestaurantId, r -> r));
+      List<RestaurantEntity> orderedRestaurantEntitiesWithMatchingItemName = orderedRestaurantIds.stream()
+      .map(byIdMap::get)
+      .filter(Objects::nonNull)
+      .collect(Collectors.toList());
+      //finding nearby reastaurants
+      List<RestaurantEntity> nearByOrderedRestaurantEntitiesWithMatchingItemName = getNearByRestaurantEntities(orderedRestaurantEntitiesWithMatchingItemName, latitude, longitude, servingRadiusInKms);
 
-     return null;
+     return getOpenRestaurants(nearByOrderedRestaurantEntitiesWithMatchingItemName, currentTime);
   }
 
   // TODO: CRIO_TASK_MODULE_RESTAURANTSEARCH
@@ -202,28 +230,24 @@ public class RestaurantRepositoryServiceImpl implements RestaurantRepositoryServ
   public List<Restaurant> findRestaurantsByItemAttributes(Double latitude, Double longitude,
       String searchString, LocalTime currentTime, Double servingRadiusInKms) {
 
-     return null;
+      List<MenuEntity> menuEntitiesWithMatchingItemAttribute = menuRepository.findMenusByItemsAttributesContainingIgnoreCase(searchString);
+      List<String> restaurantIds = menuEntitiesWithMatchingItemAttribute.stream()
+      .map(MenuEntity::getRestaurantId)
+      .distinct()
+      .collect(Collectors.toList());
+      //getting restaurants corresponding to founded matching menus
+      List<RestaurantEntity> restaurantEntitiesWithMatchingItemAttribute = restaurantRepository.findByRestaurantIdIn(restaurantIds);
+      //finding nearby reastaurants
+      List<RestaurantEntity> nearByRestaurantEntitiesWithMatchingItemAttribute = getNearByRestaurantEntities(restaurantEntitiesWithMatchingItemAttribute, latitude, longitude, servingRadiusInKms);
+
+     return getOpenRestaurants(nearByRestaurantEntitiesWithMatchingItemAttribute, currentTime);
   }
 
-
-
-
-
-  /**
-   * Utility method to check if a restaurant is within the serving radius at a given time.
-   * @return boolean True if restaurant falls within serving radius and is open, false otherwise
-   */
-  private boolean isRestaurantCloseByAndOpen(RestaurantEntity restaurantEntity,
-      LocalTime currentTime, Double latitude, Double longitude, Double servingRadiusInKms) {
-    if (isOpenNow(currentTime, restaurantEntity)) {
-      return GeoUtils.findDistanceInKm(latitude, longitude,
-          restaurantEntity.getLatitude(), restaurantEntity.getLongitude())
-          < servingRadiusInKms;
-    }
-
-    return false;
+  private boolean isSearchStrEqualsAnyItemNameInMenuEntity(MenuEntity menu, String searchString) {
+    return menu.getItems().stream()
+        .anyMatch(item -> item.getName().toLowerCase()
+            .equals(searchString.toLowerCase()));
   }
-
 
 
 }

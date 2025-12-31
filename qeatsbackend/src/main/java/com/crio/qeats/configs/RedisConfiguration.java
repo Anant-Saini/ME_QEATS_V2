@@ -3,6 +3,7 @@ package com.crio.qeats.configs;
 
 import java.time.Duration;
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import redis.clients.jedis.Jedis;
@@ -74,6 +75,7 @@ public class RedisConfiguration {
    * Destroy the cache.
    * TIP: This is useful if cache is stale or while performing tests.
    */
+  @PreDestroy
   public void destroyCache() {
     if(jedisPool != null && !jedisPool.isClosed() ) {
       jedisPool.getResource().flushAll();

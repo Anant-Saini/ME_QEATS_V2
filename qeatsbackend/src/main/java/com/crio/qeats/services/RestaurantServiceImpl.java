@@ -15,11 +15,14 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -51,19 +54,9 @@ public class RestaurantServiceImpl implements RestaurantService {
   public GetRestaurantsResponse findAllRestaurantsCloseBy(
       GetRestaurantsRequest getRestaurantsRequest, LocalTime currentTime) {
 
-        Double servingRadiusInKms;
-
-        if(isPeakHours(currentTime)) {
-          servingRadiusInKms = peakHoursServingRadiusInKms;
-        } else {
-          servingRadiusInKms = normalHoursServingRadiusInKms;
-        }
-        long startTimeInMillis = System.currentTimeMillis();
+        Double servingRadiusInKms = getServingRadiusInKms(currentTime);
         List<Restaurant> restaurants = restaurantRepositoryService.findAllRestaurantsCloseBy(getRestaurantsRequest.getLatitude(), getRestaurantsRequest.getLongitude()
         , currentTime, servingRadiusInKms);
-        long endTimeInMillis = System.currentTimeMillis();
-
-        System.out.println("Your function took :" + (endTimeInMillis - startTimeInMillis));
 
      return new GetRestaurantsResponse(restaurants);
   }
@@ -79,6 +72,15 @@ public class RestaurantServiceImpl implements RestaurantService {
     return !time.isBefore(start) && (time.isBefore(end) || time.equals(end));
   }
 
+  private Double getServingRadiusInKms(LocalTime currentTime) {
+    Double servingRadiusInKms = normalHoursServingRadiusInKms;
+
+    if(isPeakHours(currentTime)) 
+      servingRadiusInKms = peakHoursServingRadiusInKms;
+
+    return servingRadiusInKms;
+  }
+
   // TODO: CRIO_TASK_MODULE_RESTAURANTSEARCH
   // Implement findRestaurantsBySearchQuery. The request object has the search string.
   // We have to combine results from multiple sources:
@@ -92,7 +94,24 @@ public class RestaurantServiceImpl implements RestaurantService {
   public GetRestaurantsResponse findRestaurantsBySearchQuery(
       GetRestaurantsRequest getRestaurantsRequest, LocalTime currentTime) {
 
-     return null;
+      Double latitude = getRestaurantsRequest.getLatitude();
+      Double longitude = getRestaurantsRequest.getLongitude();
+      String searchString = getRestaurantsRequest.getSearchFor();
+      if(searchString == null || searchString.isEmpty())
+        return new GetRestaurantsResponse(new ArrayList<>());
+      Double servingRadiusInKms = getServingRadiusInKms(currentTime);
+      List<Restaurant> list1 = restaurantRepositoryService.findRestaurantsByName(latitude, longitude, searchString, currentTime, servingRadiusInKms);
+      List<Restaurant> list2 = restaurantRepositoryService.findRestaurantsByAttributes(latitude, longitude, searchString, currentTime, servingRadiusInKms);
+      List<Restaurant> list3 = restaurantRepositoryService.findRestaurantsByItemName(latitude, longitude, searchString, currentTime, servingRadiusInKms);
+      List<Restaurant> list4 = restaurantRepositoryService.findRestaurantsByItemAttributes(latitude, longitude, searchString, currentTime, servingRadiusInKms);
+
+      return new GetRestaurantsResponse(getOrderedRestaurantsList(list1, list2, list3, list4));
+  }
+
+  private List<Restaurant> getOrderedRestaurantsList(List<Restaurant> list1, List<Restaurant> list2, List<Restaurant> list3, List<Restaurant> list4) {
+
+    return Stream.of(list1, list2, list3, list4).flatMap(List::stream).distinct().collect(Collectors.toList());
+
   }
 
 }

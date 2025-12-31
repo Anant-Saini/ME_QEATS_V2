@@ -57,17 +57,22 @@ public class RestaurantController {
   public ResponseEntity<GetRestaurantsResponse> getRestaurants(@Valid
        GetRestaurantsRequest getRestaurantsRequest) {
 
-    log.info("getRestaurants called with {}", getRestaurantsRequest);
+    //log.info("getRestaurants called with {}", getRestaurantsRequest);
     GetRestaurantsResponse getRestaurantsResponse;
+      if(getRestaurantsRequest.getSearchFor() != null) {
+        getRestaurantsResponse = restaurantService
+         .findRestaurantsBySearchQuery(getRestaurantsRequest, LocalTime.now());
 
-      getRestaurantsResponse = restaurantService
+      } else {
+        getRestaurantsResponse = restaurantService
          .findAllRestaurantsCloseBy(getRestaurantsRequest, LocalTime.now());
+      }
 
       for (Restaurant restaurant : getRestaurantsResponse.getRestaurants()) {
           String sanitizedName = restaurant.getName().replaceAll("[Â©éí]", "e");
           restaurant.setName(sanitizedName);
       }
-      log.info("getRestaurants returned {}", getRestaurantsResponse);
+      //log.info("getRestaurants returned {}", getRestaurantsResponse);
 
     return ResponseEntity.ok().body(getRestaurantsResponse);
   }
@@ -113,17 +118,6 @@ public class RestaurantController {
   //          : 5xx, if server side error.
   // Eg:
   // curl -X GET "http://localhost:8081/qeats/v1/menu?restaurantId=11"
-
-
-
-
-
-
-
-
-
-
-
 
 }
 

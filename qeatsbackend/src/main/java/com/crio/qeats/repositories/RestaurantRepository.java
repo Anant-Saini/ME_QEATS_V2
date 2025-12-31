@@ -14,5 +14,12 @@ import org.springframework.data.mongodb.repository.Query;
 
 public interface RestaurantRepository extends MongoRepository<RestaurantEntity, String> {
 
+    List<RestaurantEntity> findByNameContainingIgnoreCase(String searchString);
+
+    @Query("{'attributes': {$regex: ?0, $options: 'i'}}")
+    List<RestaurantEntity> findByAttributesContainingIgnoreCase(String searchString);
+
+    List<RestaurantEntity> findByRestaurantIdIn(List<String> restuarantIds);
+
 }
 
