@@ -69,11 +69,12 @@ public class RestaurantController {
       
     }
 
+    if(getRestaurantsResponse == null) return ResponseEntity.ok().body(new GetRestaurantsResponse());
+
     for (Restaurant restaurant : getRestaurantsResponse.getRestaurants()) {
-        String sanitizedName = restaurant.getName().replaceAll("[Â©éí]", "e");
-        restaurant.setName(sanitizedName);
+      String sanitizedName = restaurant.getName().replaceAll("[Â©éí]", "e");
+      restaurant.setName(sanitizedName);
     }
-      //log.info("getRestaurants returned {}", getRestaurantsResponse);
 
     return ResponseEntity.ok().body(getRestaurantsResponse);
   }
