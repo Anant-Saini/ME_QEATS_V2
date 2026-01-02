@@ -163,9 +163,7 @@ public class RestaurantControllerTest {
         .findRestaurantsBySearchQuery(argumentCaptor.capture(), any(LocalTime.class));
 
     assertEquals("20.21", argumentCaptor.getValue().getLatitude().toString());
-
     assertEquals("30.31", argumentCaptor.getValue().getLongitude().toString());
-
     assertEquals("Briyani", argumentCaptor.getValue().getSearchFor());
 
   }
