@@ -137,6 +137,10 @@ public class RestaurantControllerTest {
     assertNotNull(sampleResponse);
 
     when(restaurantService
+        .findAllRestaurantsCloseBy(any(GetRestaurantsRequest.class), any(LocalTime.class)))
+        .thenReturn(sampleResponse);
+
+    when(restaurantService
         .findRestaurantsBySearchQuery(any(GetRestaurantsRequest.class), any(LocalTime.class)))
         .thenReturn(sampleResponse);
 
