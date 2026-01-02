@@ -140,10 +140,6 @@ public class RestaurantControllerTest {
         .findAllRestaurantsCloseBy(any(GetRestaurantsRequest.class), any(LocalTime.class)))
         .thenReturn(sampleResponse);
 
-    // when(restaurantService
-    //     .findRestaurantsBySearchQuery(any(GetRestaurantsRequest.class), any(LocalTime.class)))
-    //     .thenReturn(sampleResponse);
-
     ArgumentCaptor<GetRestaurantsRequest> argumentCaptor = ArgumentCaptor
         .forClass(GetRestaurantsRequest.class);
 

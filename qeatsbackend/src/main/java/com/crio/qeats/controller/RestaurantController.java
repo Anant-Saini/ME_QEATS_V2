@@ -59,9 +59,15 @@ public class RestaurantController {
 
     //log.info("getRestaurants called with {}", getRestaurantsRequest);
     GetRestaurantsResponse getRestaurantsResponse;
-      
-    getRestaurantsResponse = restaurantService
+    if(getRestaurantsRequest.getSearchFor() != null) {
+
+      getRestaurantsResponse = restaurantService.findRestaurantsBySearchQuery(getRestaurantsRequest, LocalTime.now());
+
+    } else {
+      getRestaurantsResponse = restaurantService
       .findAllRestaurantsCloseBy(getRestaurantsRequest, LocalTime.now());
+      
+    }
 
     for (Restaurant restaurant : getRestaurantsResponse.getRestaurants()) {
         String sanitizedName = restaurant.getName().replaceAll("[Â©éí]", "e");
