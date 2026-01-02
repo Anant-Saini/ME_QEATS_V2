@@ -55,10 +55,17 @@ public class RestaurantServiceImpl implements RestaurantService {
       GetRestaurantsRequest getRestaurantsRequest, LocalTime currentTime) {
 
         Double servingRadiusInKms = getServingRadiusInKms(currentTime);
+        if(getRestaurantsRequest.getSearchFor() != null) {
+
+          return findRestaurantsBySearchQuery(getRestaurantsRequest, LocalTime.now());
+  
+        } else {
+
         List<Restaurant> restaurants = restaurantRepositoryService.findAllRestaurantsCloseBy(getRestaurantsRequest.getLatitude(), getRestaurantsRequest.getLongitude()
         , currentTime, servingRadiusInKms);
-
-     return new GetRestaurantsResponse(restaurants);
+        return new GetRestaurantsResponse(restaurants);
+        
+        }
   }
 
   private boolean isPeakHours(LocalTime currentTime) {
