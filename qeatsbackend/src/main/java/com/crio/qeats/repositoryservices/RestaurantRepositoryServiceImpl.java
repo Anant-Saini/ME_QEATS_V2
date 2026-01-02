@@ -155,7 +155,7 @@ public class RestaurantRepositoryServiceImpl implements RestaurantRepositoryServ
   @Override
   public List<Restaurant> findRestaurantsByName(Double latitude, Double longitude,
       String searchString, LocalTime currentTime, Double servingRadiusInKms) {
-        List<RestaurantEntity> restaurantEntitiesWithMatchingName = restaurantRepository.findByNameContainingIgnoreCase(searchString);
+        List<RestaurantEntity> restaurantEntitiesWithMatchingName = restaurantRepository.findRestaurantsByNameExact(searchString);
         List<RestaurantEntity> nearByRestaurantEntitiesWithMatchingName = getNearByRestaurantEntities(restaurantEntitiesWithMatchingName, latitude, longitude, servingRadiusInKms);
         List<RestaurantEntity> sortedNearByRestaurantEntities = nearByRestaurantEntitiesWithMatchingName.stream()
         .sorted((r1, r2) -> {

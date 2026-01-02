@@ -153,7 +153,7 @@ public class RestaurantRepositoryServiceTest {
     assertNotNull(restaurantRepositoryService);
 
     doReturn(allRestaurants)
-        .when(restaurantRepository).findByNameContainingIgnoreCase(any());
+        .when(restaurantRepository).findRestaurantsByNameExact(any());
 
     String searchFor = "A2B";
     List<Restaurant> foundRestaurantsList = restaurantRepositoryService
@@ -169,7 +169,7 @@ public class RestaurantRepositoryServiceTest {
     assertNotNull(restaurantRepositoryService);
 
     doReturn(allRestaurants)
-        .when(restaurantRepository).findByNameContainingIgnoreCase(any());
+        .when(restaurantRepository).findRestaurantsByNameExact(any());
     String searchFor = "A2B";
     List<Restaurant> foundRestaurantsList = restaurantRepositoryService
         .findRestaurantsByName(20.8, 30.1, searchFor,
