@@ -155,20 +155,25 @@ public class RestaurantRepositoryServiceImpl implements RestaurantRepositoryServ
   @Override
   public List<Restaurant> findRestaurantsByName(Double latitude, Double longitude,
       String searchString, LocalTime currentTime, Double servingRadiusInKms) {
-        List<RestaurantEntity> restaurantEntitiesWithMatchingName = restaurantRepository.findRestaurantsByNameExact(searchString);
-        List<RestaurantEntity> nearByRestaurantEntitiesWithMatchingName = getNearByRestaurantEntities(restaurantEntitiesWithMatchingName, latitude, longitude, servingRadiusInKms);
-        List<RestaurantEntity> sortedNearByRestaurantEntities = nearByRestaurantEntitiesWithMatchingName.stream()
-        .sorted((r1, r2) -> {
+        Optional<List<RestaurantEntity>> restaurantEntitiesWithMatchingNameOptional = restaurantRepository.findRestaurantsByNameExact(searchString);
+        if(restaurantEntitiesWithMatchingNameOptional.isEmpty()) {
+          return new ArrayList<>();
+        } else {
+          List<RestaurantEntity> restaurantEntitiesWithMatchingName = restaurantEntitiesWithMatchingNameOptional.get();
+          List<RestaurantEntity> nearByRestaurantEntitiesWithMatchingName = getNearByRestaurantEntities(restaurantEntitiesWithMatchingName, latitude, longitude, servingRadiusInKms);
+          List<RestaurantEntity> sortedNearByRestaurantEntities = nearByRestaurantEntitiesWithMatchingName.stream()
+          .sorted((r1, r2) -> {
 
-          boolean exactNameMatchR1 = r1.getName().equalsIgnoreCase(searchString);
-          boolean exactNameMatchR2 = r2.getName().equalsIgnoreCase(searchString);
+            boolean exactNameMatchR1 = r1.getName().equalsIgnoreCase(searchString);
+            boolean exactNameMatchR2 = r2.getName().equalsIgnoreCase(searchString);
 
-          return Boolean.compare(exactNameMatchR2, exactNameMatchR1);
-        })
-        .collect(Collectors.toList());
+            return Boolean.compare(exactNameMatchR2, exactNameMatchR1);
+          })
+          .collect(Collectors.toList());
 
-
-     return getOpenRestaurants(sortedNearByRestaurantEntities, currentTime);
+          return getOpenRestaurants(sortedNearByRestaurantEntities, currentTime);
+        }
+     
   }
 
 

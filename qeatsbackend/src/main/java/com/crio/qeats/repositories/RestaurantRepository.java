@@ -15,7 +15,7 @@ import org.springframework.data.mongodb.repository.Query;
 public interface RestaurantRepository extends MongoRepository<RestaurantEntity, String> {
 
     @Query("{'name': {$regex: ?0, $options: 'i'}}")
-    List<RestaurantEntity> findRestaurantsByNameExact(String searchString);
+    Optional<List<RestaurantEntity>> findRestaurantsByNameExact(String searchString);
 
     @Query("{'attributes': {$regex: ?0, $options: 'i'}}")
     List<RestaurantEntity> findByAttributesContainingIgnoreCase(String searchString);

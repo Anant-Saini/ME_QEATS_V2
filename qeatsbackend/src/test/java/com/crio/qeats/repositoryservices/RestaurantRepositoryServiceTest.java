@@ -152,7 +152,7 @@ public class RestaurantRepositoryServiceTest {
     assertNotNull(mongoTemplate);
     assertNotNull(restaurantRepositoryService);
 
-    doReturn(allRestaurants)
+    doReturn(Optional.of(allRestaurants))
         .when(restaurantRepository).findRestaurantsByNameExact(any());
 
     String searchFor = "A2B";
@@ -168,7 +168,7 @@ public class RestaurantRepositoryServiceTest {
     assertNotNull(mongoTemplate);
     assertNotNull(restaurantRepositoryService);
 
-    doReturn(allRestaurants)
+    doReturn(Optional.of(allRestaurants))
         .when(restaurantRepository).findRestaurantsByNameExact(any());
     String searchFor = "A2B";
     List<Restaurant> foundRestaurantsList = restaurantRepositoryService
