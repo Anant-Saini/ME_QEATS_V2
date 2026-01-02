@@ -48,6 +48,7 @@ import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -83,8 +84,7 @@ public class RestaurantControllerTest {
   @MockBean
   private RestaurantService restaurantService;
 
-
-  @InjectMocks
+  @Autowired
   private RestaurantController restaurantController;
 
   @BeforeEach
