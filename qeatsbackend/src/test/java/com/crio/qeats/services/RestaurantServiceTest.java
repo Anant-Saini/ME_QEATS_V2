@@ -89,14 +89,6 @@ class RestaurantServiceTest {
   @Test
   void normalHourServingRadiusIs5Kms() throws IOException {
 
-    // TODO: CRIO_TASK_MODULE_RESTAURANTSAPI
-    // We must ensure the API retrieves only restaurants that are closeby and are open
-    // In short, we need to test:
-    // 1. If the mocked service methods are being called
-    // 2. If the expected restaurants are being returned
-    // HINT: Use the `loadRestaurantsDuringNormalHours` utility method to speed things up
-
-
      assertEquals(getServingRadius(loadRestaurantsDuringNormalHours(), LocalTime.of(16, 0)), "5.0");
   }
 

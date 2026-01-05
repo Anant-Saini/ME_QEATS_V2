@@ -14,11 +14,6 @@ import redis.clients.jedis.JedisPoolConfig;
 @Component
 public class RedisConfiguration {
 
-  // TODO: CRIO_TASK_MODULE_REDIS
-  // The Jedis client for Redis goes through some initialization steps before you can
-  // start using it as a cache.
-  // Objective:
-  // Some methods are empty or partially filled. Make it into a working implementation.
   public static final String redisHost = "localhost";
 
   // Amount of time after which the redis entries should expire.

@@ -1,9 +1,3 @@
-/*
- *
- *  * Copyright (c) Crio.Do 2019. All rights reserved
- *
- */
-
 package com.crio.qeats.repositoryservices;
 
 import ch.hsr.geohash.GeoHash;
@@ -78,11 +72,6 @@ public class RestaurantRepositoryServiceImpl implements RestaurantRepositoryServ
     return time.isAfter(openingTime) && time.isBefore(closingTime);
   }
 
-  // TODO: CRIO_TASK_MODULE_NOSQL
-  // Objectives:
-  // 1. Implement findAllRestaurantsCloseby.
-  // 2. Remember to keep the precision of GeoHash in mind while using it as a key.
-  // Check RestaurantRepositoryService.java file for the interface contract.
   public List<Restaurant> findAllRestaurantsCloseBy(Double latitude,
       Double longitude, LocalTime currentTime, Double servingRadiusInKms) {
 
@@ -149,9 +138,6 @@ public class RestaurantRepositoryServiceImpl implements RestaurantRepositoryServ
     return false;
   }
 
-  // TODO: CRIO_TASK_MODULE_RESTAURANTSEARCH
-  // Objective:
-  // Find restaurants whose names have an exact or partial match with the search query.
   @Override
   public List<Restaurant> findRestaurantsByName(Double latitude, Double longitude,
       String searchString, LocalTime currentTime, Double servingRadiusInKms) {
@@ -176,10 +162,6 @@ public class RestaurantRepositoryServiceImpl implements RestaurantRepositoryServ
      
   }
 
-
-  // TODO: CRIO_TASK_MODULE_RESTAURANTSEARCH
-  // Objective:
-  // Find restaurants whose attributes (cuisines) intersect with the search query.
   @Override
   public List<Restaurant> findRestaurantsByAttributes(
       Double latitude, Double longitude,
@@ -189,13 +171,6 @@ public class RestaurantRepositoryServiceImpl implements RestaurantRepositoryServ
 
       return getOpenRestaurants(nearByRestaurantEntitiesWithMatchingAttribute, currentTime);
   }
-
-
-
-  // TODO: CRIO_TASK_MODULE_RESTAURANTSEARCH
-  // Objective:
-  // Find restaurants which serve food items whose names form a complete or partial match
-  // with the search query.
 
   @Override
   public List<Restaurant> findRestaurantsByItemName(
@@ -228,9 +203,6 @@ public class RestaurantRepositoryServiceImpl implements RestaurantRepositoryServ
      return getOpenRestaurants(nearByOrderedRestaurantEntitiesWithMatchingItemName, currentTime);
   }
 
-  // TODO: CRIO_TASK_MODULE_RESTAURANTSEARCH
-  // Objective:
-  // Find restaurants which serve food items whose attributes intersect with the search query.
   @Override
   public List<Restaurant> findRestaurantsByItemAttributes(Double latitude, Double longitude,
       String searchString, LocalTime currentTime, Double servingRadiusInKms) {

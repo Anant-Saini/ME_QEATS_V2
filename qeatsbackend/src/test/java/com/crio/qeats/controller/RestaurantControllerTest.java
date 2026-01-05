@@ -161,9 +161,11 @@ public class RestaurantControllerTest {
 
     verify(restaurantService, times(1))
         .findRestaurantsBySearchQuery(argumentCaptor.capture(), any(LocalTime.class));
-    System.out.println(argumentCaptor.getValue().getSearchFor());
+
     assertEquals("20.21", argumentCaptor.getValue().getLatitude().toString());
+
     assertEquals("30.31", argumentCaptor.getValue().getLongitude().toString());
+
     assertEquals("Briyani", argumentCaptor.getValue().getSearchFor());
 
   }
