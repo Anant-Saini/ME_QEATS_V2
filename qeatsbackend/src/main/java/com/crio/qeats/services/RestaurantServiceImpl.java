@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -34,6 +36,7 @@ public class RestaurantServiceImpl implements RestaurantService {
 
   private final Double peakHoursServingRadiusInKms = 3.0;
   private final Double normalHoursServingRadiusInKms = 5.0;
+  private static final Integer MAX_THREADS = 4;
   private static final LocalTime MORNING_START = LocalTime.of(8, 0);
   private static final LocalTime MORNING_END = LocalTime.of(10, 0);
 
@@ -122,7 +125,53 @@ public class RestaurantServiceImpl implements RestaurantService {
   public GetRestaurantsResponse findRestaurantsBySearchQueryMt(
       GetRestaurantsRequest getRestaurantsRequest, LocalTime currentTime) {
 
-     return null;
+      Double latitude = getRestaurantsRequest.getLatitude();
+      Double longitude = getRestaurantsRequest.getLongitude();
+      String searchString = getRestaurantsRequest.getSearchFor();
+      if(searchString == null || searchString.isEmpty())
+        return new GetRestaurantsResponse(new ArrayList<>());
+      Double servingRadiusInKms = getServingRadiusInKms(currentTime);
+      
+
+     return new GetRestaurantsResponse(getOrderedRestaurantsListMt(latitude, longitude, searchString, currentTime, servingRadiusInKms));
   }
+
+  private List<Restaurant> getOrderedRestaurantsListMt(Double latitude, Double longitude, String searchString, LocalTime currentTime, Double servingRadiusInKms) {
+
+    List<Restaurant> list1, list2, list3, list4;
+    ExecutorService threadPool = Executors.newFixedThreadPool(MAX_THREADS);
+    Future<List<Restaurant>> list1Future = threadPool.submit(() -> 
+      restaurantRepositoryService.findRestaurantsByName(latitude, longitude, searchString, currentTime, servingRadiusInKms)
+    );
+    
+    Future<List<Restaurant>> list2Future = threadPool.submit(() -> 
+    restaurantRepositoryService.findRestaurantsByAttributes(latitude, longitude, searchString, currentTime, servingRadiusInKms)
+    );
+    Future<List<Restaurant>> list3Future = threadPool.submit(() -> 
+    restaurantRepositoryService.findRestaurantsByItemName(latitude, longitude, searchString, currentTime, servingRadiusInKms)
+    );
+    Future<List<Restaurant>> list4Future = threadPool.submit(() -> 
+    restaurantRepositoryService.findRestaurantsByItemAttributes(latitude, longitude, searchString, currentTime, servingRadiusInKms)
+    );
+
+    try {
+      list1 = list1Future.get();
+      list2 = list2Future.get();
+      list3 = list3Future.get();
+      list4 = list4Future.get();
+
+    } catch(Exception e) {
+      e.printStackTrace();
+      throw new RuntimeException(e);
+
+    } finally {
+      threadPool.shutdown();
+    }
+
+    return getOrderedRestaurantsList(list1, list2, list3, list4);
+
+  }
+
+
 }
 

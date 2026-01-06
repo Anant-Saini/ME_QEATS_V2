@@ -27,9 +27,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-// TODO: CRIO_TASK_MODULE_RESTAURANTSAPI
-// Implement Controller using Spring annotations.
-// Remember, annotations have various "targets". They can be class level, method level or others.
 @Log4j2
 @RestController
 public class RestaurantController {
@@ -46,30 +43,6 @@ public class RestaurantController {
   @Autowired
   private RestaurantService restaurantService;
 
-
-
-  @GetMapping(RESTAURANT_API_ENDPOINT+RESTAURANTS_API)
-  public ResponseEntity<GetRestaurantsResponse> getRestaurants(@Valid
-       GetRestaurantsRequest getRestaurantsRequest) {
-
-    //log.info("getRestaurants called with {}", getRestaurantsRequest);
-    GetRestaurantsResponse getRestaurantsResponse;
-    if(getRestaurantsRequest.getSearchFor() != null) {
-
-      getRestaurantsResponse = restaurantService.findRestaurantsBySearchQuery(getRestaurantsRequest, LocalTime.now());
-
-    } else {
-      getRestaurantsResponse = restaurantService
-      .findAllRestaurantsCloseBy(getRestaurantsRequest, LocalTime.now());
-      
-    }
-
-    if(getRestaurantsResponse == null) return ResponseEntity.ok().body(new GetRestaurantsResponse());
-
-    for (Restaurant restaurant : getRestaurantsResponse.getRestaurants()) {
-      String sanitizedName = restaurant.getName().replaceAll("[Â©éí]", "e");
-      restaurant.setName(sanitizedName);
-    }
   // TODO: CRIO_TASK_MODULE_MULTITHREADING
   //  Improve the performance of this GetRestaurants API
   //  and keep the functionality same.
@@ -137,21 +110,31 @@ public class RestaurantController {
   // Eg:
   // curl -X GET "http://localhost:8081/qeats/v1/restaurants?latitude=28.4900591&longitude=77.536386&searchFor=tamil"
 
-  @GetMapping(RESTAURANTS_API)
-  public ResponseEntity<GetRestaurantsResponse> getRestaurants(
+  @GetMapping(RESTAURANT_API_ENDPOINT+RESTAURANTS_API)
+  public ResponseEntity<GetRestaurantsResponse> getRestaurants(@Valid
        GetRestaurantsRequest getRestaurantsRequest) {
 
-    log.info("getRestaurants called with {}", getRestaurantsRequest);
+    //log.info("getRestaurants called with {}", getRestaurantsRequest);
     GetRestaurantsResponse getRestaurantsResponse;
+    if(getRestaurantsRequest.getSearchFor() != null) {
 
-      //CHECKSTYLE:OFF
+      getRestaurantsResponse = restaurantService.findRestaurantsBySearchQueryMt(getRestaurantsRequest, LocalTime.now());
+
+    } else {
       getRestaurantsResponse = restaurantService
-          .findAllRestaurantsCloseBy(getRestaurantsRequest, LocalTime.now());
-      log.info("getRestaurants returned {}", getRestaurantsResponse);
-      //CHECKSTYLE:ON
+      .findAllRestaurantsCloseBy(getRestaurantsRequest, LocalTime.now());
+      
+    }
 
+    if(getRestaurantsResponse == null) return ResponseEntity.ok().body(new GetRestaurantsResponse());
+
+    for (Restaurant restaurant : getRestaurantsResponse.getRestaurants()) {
+      String sanitizedName = restaurant.getName().replaceAll("[Â©éí]", "e");
+      restaurant.setName(sanitizedName);
+    }
     return ResponseEntity.ok().body(getRestaurantsResponse);
   }
+
 
   @GetMapping(RESTAURANT_API_ENDPOINT+CART_API)
   public ResponseEntity<GetCartResponse> getCart(@RequestParam("userId") String userId) {
