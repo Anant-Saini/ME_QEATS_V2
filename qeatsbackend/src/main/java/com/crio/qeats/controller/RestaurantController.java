@@ -118,7 +118,7 @@ public class RestaurantController {
     GetRestaurantsResponse getRestaurantsResponse;
     if(getRestaurantsRequest.getSearchFor() != null) {
 
-      getRestaurantsResponse = restaurantService.findRestaurantsBySearchQueryMt(getRestaurantsRequest, LocalTime.now());
+      getRestaurantsResponse = restaurantService.findRestaurantsBySearchQuery(getRestaurantsRequest, LocalTime.now());
 
     } else {
       getRestaurantsResponse = restaurantService
