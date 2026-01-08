@@ -1,7 +1,7 @@
 # 🍔 QEats V2 - Restaurant Discovery Platform
 
 <div align="center">
-  <strong>A modern, full-stack restaurant discovery and food ordering application</strong>
+  <strong>A modern restaurant discovery application</strong>
   <br><br>
   <a href="#-features">Features</a> •
   <a href="#-tech-stack">Tech Stack</a> •
@@ -14,16 +14,13 @@
 
 ## 📋 Overview
 
-QEats V2 is an advanced version of the restaurant discovery platform, built with modern backend technologies and best practices. This project demonstrates a scalable, maintainable microservices-ready architecture with focus on performance, reliability, and clean code principles.
+QEats V2 is an advanced version of the restaurant discovery platform, built with modern backend technologies and best practices. This project demonstrates a scalable, maintainable architecture with focus on performance, reliability, and clean code principles.
 
 ## ✨ Features
 
-- 🔍 **Advanced Search** - Find restaurants by location, cuisine, ratings
-- 🏪 **Restaurant Browsing** - Explore detailed restaurant profiles with menus
-- 🛒 **Order Management** - Complete order lifecycle management
-- ⭐ **Ratings & Reviews** - Browse customer reviews and ratings
+- 🔍 **Advanced Search** - Find restaurants by restaurant name, restaurant type, cuisine served, cuisine type etc
+- 🏪 **Restaurant Browsing** - Explore restaurants which are nearby and open currently 
 - 🗺️ **Geolocation** - Location-based restaurant discovery
-- 🔐 **Authentication** - Secure user authentication
 - 📊 **Multi-threaded Processing** - Optimized concurrent request handling
 
 ## 🛠️ Tech Stack
@@ -69,7 +66,7 @@ QEats V2 is an advanced version of the restaurant discovery platform, built with
    ```
 
 4. **Access the API**
-   - Base URL: `http://localhost:8080`
+   - Base URL: `http://localhost:8081`
    - API Documentation: Check Postman collections in the repository
 
 ## 📁 Project Structure
@@ -109,15 +106,9 @@ spring:
 ## 📝 API Endpoints
 
 ### Restaurants
-- `GET /restaurants` - Get all restaurants
-- `GET /restaurants/{id}` - Get restaurant by ID
-- `GET /restaurants/search?city={city}` - Search restaurants by city
+- `GET /restaurants?latitude={latitude}&longitude={longitude}` - Get nearby restaurants
+- `GET /restaurants?latitude={latitude}&longitude={longitude}&searchFor={searchFor}` - Filter nearby restaurants based on search string 
 - `GET /restaurants/{id}/menu` - Get restaurant menu
-
-### Orders
-- `POST /orders` - Create a new order
-- `GET /orders/{id}` - Get order details
-- `PUT /orders/{id}` - Update order status
 
 ## 🧪 Testing
 
