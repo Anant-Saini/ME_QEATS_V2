@@ -14,7 +14,7 @@
 
 ## 📋 Overview
 
-QEats V2 is an advanced version of the restaurant discovery platform, built with modern backend technologies and best practices. This project demonstrates a scalable, maintainable architecture with focus on performance, reliability, and clean code principles.
+QEats V2 is a simple version of a restaurant discovery platform, built with modern backend technologies and best practices. This project demonstrates a scalable, maintainable architecture with focus on performance, reliability, and clean code principles.
 
 ## ✨ Features
 
@@ -51,7 +51,7 @@ QEats V2 is an advanced version of the restaurant discovery platform, built with
 
 1. **Clone the repository**
    ```bash
-   git clone https://gitlab.crio.do/COHORT_ME_QEATS_V2_ENROLL_1642584294077/anantsaini-india-ME_QEATS_V2.git
+   git clone [https://github.com/Anant-Saini/ME_QEATS_V2.git]
    cd anantsaini-india-ME_QEATS_V2
    ```
 
