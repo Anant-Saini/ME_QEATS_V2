@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -36,6 +38,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
@@ -226,6 +229,38 @@ public class RestaurantRepositoryServiceImpl implements RestaurantRepositoryServ
             .equals(searchString.toLowerCase()));
   }
 
+  //Multithreading implementation of restaurants by search string calls
+  @Async("restaurantTaskExecutor")
+  @Override
+  public CompletableFuture<List<Restaurant>> findRestaurantsByNameMt(Double latitude, Double longitude,
+      String searchString, LocalTime currentTime, Double servingRadiusInKms) {
+
+    return CompletableFuture.completedFuture(findRestaurantsByName(latitude, longitude, searchString, currentTime, servingRadiusInKms));
+  }
+
+  @Async("restaurantTaskExecutor")
+  @Override
+  public CompletableFuture<List<Restaurant>> findRestaurantsByAttributesMt(Double latitude, Double longitude,
+  String searchString, LocalTime currentTime, Double servingRadiusInKms) {
+
+    return CompletableFuture.completedFuture(findRestaurantsByAttributes(latitude, longitude, searchString, currentTime, servingRadiusInKms));
+  }
+
+  @Async("restaurantTaskExecutor")
+  @Override
+  public CompletableFuture<List<Restaurant>> findRestaurantsByItemNameMt(Double latitude, Double longitude,
+    String searchString, LocalTime currentTime, Double servingRadiusInKms) {
+
+    return CompletableFuture.completedFuture(findRestaurantsByItemName(latitude, longitude, searchString, currentTime, servingRadiusInKms));
+  }
+
+  @Async("restaurantTaskExecutor")
+  @Override
+  public CompletableFuture<List<Restaurant>> findRestaurantsByItemAttributesMt(Double latitude, Double longitude,
+      String searchString, LocalTime currentTime, Double servingRadiusInKms) {
+
+    return CompletableFuture.completedFuture(findRestaurantsByItemAttributes(latitude, longitude, searchString, currentTime, servingRadiusInKms));
+  }
 
 }
 

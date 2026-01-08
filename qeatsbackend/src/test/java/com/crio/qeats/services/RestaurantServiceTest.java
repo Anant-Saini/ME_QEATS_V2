@@ -32,6 +32,7 @@ import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
@@ -45,7 +46,7 @@ import org.springframework.test.context.ActiveProfiles;
 class RestaurantServiceTest {
 
   private static final String FIXTURES = "fixtures/exchanges";
-  @InjectMocks
+  @Autowired
   private RestaurantServiceImpl restaurantService;
   @MockBean
   private RestaurantRepositoryService restaurantRepositoryServiceMock;
@@ -53,7 +54,7 @@ class RestaurantServiceTest {
 
   @BeforeEach
   void setup() {
-    MockitoAnnotations.initMocks(this);
+    //MockitoAnnotations.initMocks(this);
 
     objectMapper = new ObjectMapper();
   }

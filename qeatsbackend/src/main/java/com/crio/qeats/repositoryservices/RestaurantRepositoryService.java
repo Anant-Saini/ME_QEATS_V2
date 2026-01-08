@@ -9,6 +9,7 @@ package com.crio.qeats.repositoryservices;
 import com.crio.qeats.dto.Restaurant;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import org.springframework.scheduling.annotation.Async;
 
@@ -63,6 +64,18 @@ public interface RestaurantRepositoryService {
    * @return list of restaurants
    */
   List<Restaurant> findRestaurantsByItemAttributes(Double latitude, Double longitude,
+      String searchString, LocalTime currentTime, Double servingRadiusInKms);
+
+  CompletableFuture<List<Restaurant>> findRestaurantsByNameMt(Double latitude, Double longitude,
+      String searchString, LocalTime currentTime, Double servingRadiusInKms);
+
+  CompletableFuture<List<Restaurant>> findRestaurantsByAttributesMt(Double latitude, Double longitude,
+      String searchString, LocalTime currentTime, Double servingRadiusInKms);
+  
+  CompletableFuture<List<Restaurant>> findRestaurantsByItemNameMt(Double latitude, Double longitude,
+      String searchString, LocalTime currentTime, Double servingRadiusInKms);
+
+  CompletableFuture<List<Restaurant>> findRestaurantsByItemAttributesMt(Double latitude, Double longitude,
       String searchString, LocalTime currentTime, Double servingRadiusInKms);
 
 }

@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadLocalRandom;
 import org.springframework.scheduling.annotation.Async;
@@ -65,6 +66,29 @@ public class RestaurantRepositoryServiceDummyImpl implements RestaurantRepositor
   public List<Restaurant> findRestaurantsByItemAttributes(Double latitude, Double longitude,
       String searchString, LocalTime currentTime, Double servingRadiusInKms) {
     return null;
+  }
+
+  public CompletableFuture<List<Restaurant>> findRestaurantsByNameMt(Double latitude, Double longitude,
+      String searchString, LocalTime currentTime, Double servingRadiusInKms) {
+
+  return null;
+  }
+
+  public CompletableFuture<List<Restaurant>> findRestaurantsByAttributesMt(Double latitude, Double longitude,
+      String searchString, LocalTime currentTime, Double servingRadiusInKms) {
+  
+  return null;
+  }
+  
+  public CompletableFuture<List<Restaurant>> findRestaurantsByItemNameMt(Double latitude, Double longitude,
+      String searchString, LocalTime currentTime, Double servingRadiusInKms) {
+  return null;
+  }
+
+  public CompletableFuture<List<Restaurant>> findRestaurantsByItemAttributesMt(Double latitude, Double longitude,
+      String searchString, LocalTime currentTime, Double servingRadiusInKms) {
+
+  return null;
   }
 
 
